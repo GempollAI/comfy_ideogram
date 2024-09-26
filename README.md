@@ -11,6 +11,7 @@ Prerequisite: [Ideogram](https://ideogram.ai/) API Key
 
 1. Set the API key in environment variables `IDEOGRAM_KEY` before ComfyUI starts or set it on the node.
 2. Use the node as you like
+   * If you want to pick a color instead of inputting a color hex value, use `ColorSelect` node.
 
 ## LICENSE
 [MIT License](LICENSE)
