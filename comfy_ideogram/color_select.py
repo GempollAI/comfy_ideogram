@@ -17,7 +17,7 @@ class ColorSelect:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("value",)
     FUNCTION = 'picker'
-    CATEGORY = 'select'
+    CATEGORY = 'Ideogram/select'
 
     def picker(self, color):
         ret = color

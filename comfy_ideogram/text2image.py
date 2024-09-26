@@ -189,7 +189,7 @@ class IdeogramTxt2Img:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("IMAGE",)
     FUNCTION = "text2image"
-    CATEGORY = "gempoll/ideo_t2i"
+    CATEGORY = "Ideogram/txt2img"
 
     def text2image(self,
                    prompt: str,
