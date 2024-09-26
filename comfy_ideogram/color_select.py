@@ -1,16 +1,14 @@
 
-class Colors_select:
+class ColorSelect:
 
     def __init__(self):
         pass
 
     @classmethod
-    def INPUT_TYPES(self):
-        mode_list = ['HEX']
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "color": ("COLOR", {"default": "#FFFFFF"},),
-                "mode": (mode_list,),  # 输出模式
             },
             "optional": {
             }
@@ -21,15 +19,15 @@ class Colors_select:
     FUNCTION = 'picker'
     CATEGORY = 'select'
 
-    def picker(self, color, mode):
+    def picker(self, color):
         ret = color
         return (ret,)
 
 
 NODE_CLASS_MAPPINGS = {
-    "color_select": Colors_select
+    "ColorSelect": ColorSelect
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "color_select": "color_select"
+    "ColorSelect": "ColorSelect"
 }
