@@ -7,7 +7,7 @@ from PIL import Image, ImageSequence, ImageOps
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
-RESOLUTION_DEFAULT = "ByAspectRatio"
+RESOLUTION_DEFAULT = "NotSelected"
 
 RESOLUTIONS = [
     RESOLUTION_DEFAULT,
@@ -96,7 +96,10 @@ RESOLUTION_MAPPING = {
     for v in RESOLUTIONS
 }
 
+ASPECT_RATIO_DEFAULT = "NotSelected"
+
 ASPECT_RATIOS = [
+    ASPECT_RATIO_DEFAULT,
     "ASPECT_10_16",
     "ASPECT_16_10",
     "ASPECT_9_16",
@@ -214,6 +217,11 @@ class IdeogramTxt2Img:
         resolution = RESOLUTION_MAPPING[resolution]
         aspect_ratio = ASPECT_RATIO_MAPPING[aspect_ratio]
 
+        if resolution == RESOLUTION_DEFAULT and aspect_ratio == ASPECT_RATIO_DEFAULT:
+            raise Exception("Must select one of aspect ratio and resolution")
+        if resolution != RESOLUTION_DEFAULT and aspect_ratio != ASPECT_RATIO_DEFAULT:
+            raise Exception("Should not select both aspect ratio and resolution")
+
         # 移除权重为0的元素及其对应的颜色
         weights_colors = [(w, c) for w, c in zip(weights, colors) if w != 0.0]
 
@@ -256,7 +264,6 @@ class IdeogramTxt2Img:
         payload = {
             "image_request": {
                 "prompt": prompt,
-                "aspect_ratio": aspect_ratio,
                 "model": model,
                 "magic_prompt_option": magic_prompt_option,
                 "negative_prompt": negative_prompt,
@@ -268,6 +275,9 @@ class IdeogramTxt2Img:
 
         if resolution != RESOLUTION_DEFAULT:
             payload["image_request"]["resolution"] = resolution
+
+        if aspect_ratio != ASPECT_RATIO_DEFAULT:
+            payload["image_request"]["aspect_ratio"] = aspect_ratio
 
         headers = {
             "Api-Key": api,
