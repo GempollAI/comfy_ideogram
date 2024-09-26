@@ -174,6 +174,7 @@ class IdeogramTxt2Img:
                 }),
                 "aspect_ratio": (list(ASPECT_RATIO_MAPPING.keys()),),
                 "resolution": (list(RESOLUTION_MAPPING.keys()),),
+                "seed": ("INT", {"default": 1234}),
                 "model": (["V_2", "V_2_TURBO", "V_1", "V_1_TURBO"],),
                 "magic_prompt_option": (["AUTO", "ON", "OFF"],),
                 "negative_prompt": ("STRING", {"default": ""}),
@@ -201,6 +202,7 @@ class IdeogramTxt2Img:
                    model: str,
                    magic_prompt_option: str,
                    negative_prompt: str,
+                   seed: int,
                    color_palette_hex1: str, color_palette_weight1: float,
                    color_palette_hex2: str, color_palette_weight2: float,
                    color_palette_hex3: str, color_palette_weight3: float,
@@ -267,6 +269,7 @@ class IdeogramTxt2Img:
                 "model": model,
                 "magic_prompt_option": magic_prompt_option,
                 "negative_prompt": negative_prompt,
+                "seed": seed,
                 "color_palette": {
                     "members": color_palette
                 },
