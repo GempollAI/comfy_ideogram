@@ -7,6 +7,10 @@ from PIL import Image, ImageSequence, ImageOps
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
+MIN_COLOR_WEIGHT_FLOAT = 0.05 # weight >= 0.05, required by Ideogram
+ROUNDING_MULTIPLIER = 100 # 保留百分位
+MIN_COLOR_WEIGHT_INT = int(MIN_COLOR_WEIGHT_FLOAT * ROUNDING_MULTIPLIER)
+
 RESOLUTION_DEFAULT = "NotSelected"
 
 RESOLUTIONS = [
@@ -237,25 +241,25 @@ class IdeogramTxt2Img:
         normalized_weight = [i / total_weight for i in weights]
 
         # 去除小数点后两位的数字，并计算这些被去除值的总和
-        truncated_weight_int = [int(i * 100) for i in normalized_weight]
-        gap = 100 - sum(truncated_weight_int)
+        truncated_weight_int = [int(i * ROUNDING_MULTIPLIER) for i in normalized_weight]
+        total_weight_gap = ROUNDING_MULTIPLIER - sum(truncated_weight_int)
         # 找到剩余元素中的最大值
         min_index = truncated_weight_int.index(min(truncated_weight_int))
         # 将被去除值的总和补到最小的数字上
-        truncated_weight_int[min_index] += gap
+        truncated_weight_int[min_index] += total_weight_gap
 
-        # 补充低于0.05 * 100 的权重，因为 API 的要求，权重不能小于 0.05
+        # 补充低于 MIN_COLOR_WEIGHT_INT 的权重
         for (i, val) in enumerate(truncated_weight_int):
-            if val < 5:
-                diff = 5 - val
-                truncated_weight_int[i] = 5
+            if val < MIN_COLOR_WEIGHT_INT:
+                diff = MIN_COLOR_WEIGHT_INT - val
+                truncated_weight_int[i] = MIN_COLOR_WEIGHT_INT
                 max_index = truncated_weight_int.index(max(truncated_weight_int))
                 truncated_weight_int[max_index] -= diff
 
         for val in truncated_weight_int:
-            assert val >= 5, "Impossible"
+            assert val >= MIN_COLOR_WEIGHT_INT, "Impossible"
 
-        rectified_weights = [val / 100 for val in truncated_weight_int]
+        rectified_weights = [val / ROUNDING_MULTIPLIER for val in truncated_weight_int]
         color_palette = [
             {"color_hex": color, "color_weight": color_weight}
             for color, color_weight in zip(colors, rectified_weights)
