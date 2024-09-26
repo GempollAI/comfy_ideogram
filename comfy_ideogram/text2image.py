@@ -165,8 +165,6 @@ def pil2tensor(img):
 
 
 class IdeogramTxt2Img:
-    def __init__(self):
-        pass
 
     @classmethod
     def INPUT_TYPES(cls):
