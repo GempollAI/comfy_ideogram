@@ -1,3 +1,4 @@
+# Acknowledgement: `ColorSelect` is modified from [LayerStyle](https://github.com/chflame163/ComfyUI_LayerStyle)'s `ColorPicker`
 
 class ColorSelect:
 
