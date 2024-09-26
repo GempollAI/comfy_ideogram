@@ -86,15 +86,53 @@ class ideogram_text2image:
                    color_palette_hex2, color_palette_weight2, color_palette_hex3, color_palette_weight3,
                    color_palette_hex4, color_palette_weight4, api):
         url = "https://api.ideogram.ai/generate"
+        weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
+        colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
 
-        color_palette_weight_new1 = color_palette_weight1 / (
-                    color_palette_weight1 + color_palette_weight2 + color_palette_weight3 + color_palette_weight4)
-        color_palette_weight_new2 = color_palette_weight2 / (
-                    color_palette_weight1 + color_palette_weight2 + color_palette_weight3 + color_palette_weight4)
-        color_palette_weight_new3 = color_palette_weight3 / (
-                    color_palette_weight1 + color_palette_weight2 + color_palette_weight3 + color_palette_weight4)
-        color_palette_weight_new4 = color_palette_weight4 / (
-                    color_palette_weight1 + color_palette_weight2 + color_palette_weight3 + color_palette_weight4)
+        # 移除权重为0的元素及其对应的颜色
+        weights_colors = [(w, c) for w, c in zip(weights, colors) if w != 0]
+        if not weights_colors:
+            raise ValueError("All weights are zero, cannot proceed with image generation.")
+
+        weights, colors = zip(*weights_colors)
+
+        # 计算剩余元素的总和
+        total_weight = sum(weights)
+
+        # 对剩余的元素进行归一化处理
+        normalized_weight = [i / total_weight for i in weights]
+
+        # 去除小数点后两位的数字，并计算这些被去除值的总和
+        truncated_weight = [int(i * 100) / 100 for i in normalized_weight]
+        removed_sum = sum(normalized_weight) - sum(truncated_weight)
+
+        # 找到剩余元素中的最大值
+        if truncated_weight:
+            max_index = truncated_weight.index(max(truncated_weight))
+
+            # 将被去除值的总和补到最大的数字上
+            truncated_weight[max_index] += removed_sum
+
+        # 补充低于0.05的权重
+        for i in range(len(truncated_weight)):
+            if truncated_weight[i] < 0.05:
+                diff = 0.05 - truncated_weight[i]
+                truncated_weight[i] = 0.05
+                truncated_weight[max_index] -= diff
+
+                # 重新计算最大值的索引，因为最大值可能已经改变
+                max_index = truncated_weight.index(max(truncated_weight))
+
+        print("weight:",weights)
+        print("truncated_weight:", truncated_weight)
+
+
+        color_palette = [
+            {"color_hex": color, "color_weight": weight}
+            for color, weight in zip(colors, truncated_weight)
+        ]
+
+
 
         payload = {"image_request": {
             "prompt": prompt,
@@ -103,12 +141,7 @@ class ideogram_text2image:
             "magic_prompt_option": magic_prompt_option,
             "negative_prompt": negative_prompt,
             "color_palette": {
-                "members": [
-                    {"color_hex": color_palette_hex1, "color_weight": color_palette_weight_new1},
-                    {"color_hex": color_palette_hex2, "color_weight": color_palette_weight_new2},
-                    {"color_hex": color_palette_hex3, "color_weight": color_palette_weight_new3},
-                    {"color_hex": color_palette_hex4, "color_weight": color_palette_weight_new4}
-                ]}
+                "members": color_palette},
         }}
         headers = {
             "Api-Key": api,
