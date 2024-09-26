@@ -4,7 +4,8 @@ import torch
 import numpy as np
 import os
 from PIL import Image, ImageSequence, ImageOps
-from .utils import CONFIGS
+
+API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
 RESOLUTION_DEFAULT = "ByAspectRatio"
 
@@ -158,7 +159,7 @@ def pil2tensor(img):
 
 class IdeogramTxt2Img:
     def __init__(self):
-        self.configs = CONFIGS
+        pass
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -203,9 +204,9 @@ class IdeogramTxt2Img:
                    color_palette_hex4: str, color_palette_weight4: float,
                    api):
         if len(api) == 0 or api is None:
-            api = self.configs.api_key
-            if len(self.configs.api_key) == 0:
-                raise Exception("Must configure the API key in configs.json or on the node.")
+            if API_KEY is None:
+                raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
+            api = API_KEY
 
         txt2img_generate_url = "https://api.ideogram.ai/generate"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
