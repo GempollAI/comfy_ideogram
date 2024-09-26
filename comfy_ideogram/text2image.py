@@ -285,8 +285,12 @@ class IdeogramTxt2Img:
         }
 
         response = requests.post(txt2img_generate_url, json=payload, headers=headers)
-
-        img_url = response.json()["data"][0]["url"]
+        response.raise_for_status()
+        response_data = response.json()["data"][0]
+        is_image_safe = response_data["is_image_safe"]
+        if not is_image_safe:
+            raise Exception("Ideogram reports the generated image is not safe. Image not available.")
+        img_url = response_data["url"]
         img, _name = load_image(img_url)
         img_out, mask_out = pil2tensor(img)
         return img_out, mask_out
