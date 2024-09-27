@@ -1,3 +1,4 @@
+from .utils import *
 import requests
 from io import BytesIO
 import torch
@@ -225,9 +226,12 @@ class IdeogramImg2Img:
         img2img_generate_url = "https://api-ideogram-proxy.gempoll.com/remix"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
         colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
+        for c in colors:
+            check_color_hex(c)
         resolution = RESOLUTION_MAPPING[resolution]
         aspect_ratio = ASPECT_RATIO_MAPPING[aspect_ratio]
         image_weight = int(image_weight)
+
 
         # 检查输入图像的形状和数据类型
         if image.ndim != 4:
@@ -261,33 +265,7 @@ class IdeogramImg2Img:
             raise ValueError("All weights are zero, cannot proceed with image generation.")
 
         weights, colors = zip(*weights_colors)
-
-        # 计算剩余元素的总和
-        total_weight = sum(weights)
-
-        # 对剩余的元素进行归一化处理
-        normalized_weight = [i / total_weight for i in weights]
-
-        # 去除小数点后两位的数字，并计算这些被去除值的总和
-        truncated_weight_int = [int(i * ROUNDING_MULTIPLIER) for i in normalized_weight]
-        total_weight_gap = ROUNDING_MULTIPLIER - sum(truncated_weight_int)
-        # 找到剩余元素中的最大值
-        min_index = truncated_weight_int.index(min(truncated_weight_int))
-        # 将被去除值的总和补到最小的数字上
-        truncated_weight_int[min_index] += total_weight_gap
-
-        # 补充低于 MIN_COLOR_WEIGHT_INT 的权重
-        for (i, val) in enumerate(truncated_weight_int):
-            if val < MIN_COLOR_WEIGHT_INT:
-                diff = MIN_COLOR_WEIGHT_INT - val
-                truncated_weight_int[i] = MIN_COLOR_WEIGHT_INT
-                max_index = truncated_weight_int.index(max(truncated_weight_int))
-                truncated_weight_int[max_index] -= diff
-
-        for val in truncated_weight_int:
-            assert val >= MIN_COLOR_WEIGHT_INT, "Impossible"
-
-        rectified_weights = [val / ROUNDING_MULTIPLIER for val in truncated_weight_int]
+        rectified_weights = rectify_weights(weights)
         color_palette = [
             {"color_hex": color, "color_weight": color_weight}
             for color, color_weight in zip(colors, rectified_weights)
@@ -319,11 +297,7 @@ class IdeogramImg2Img:
             "Api-Key": api_key
         }
 
-        print("payload", payload)
-        print("--------------------------------------------------")
-        print("files", files)
-
-        response = requests.post(img2img_generate_url, headers=headers, data=payload, files=files)
+        response = requests.post(img2img_generate_url, data=payload, files=files, headers=headers)
         response.raise_for_status()
         response_data = response.json()["data"][0]
         is_image_safe = response_data["is_image_safe"]
@@ -341,3 +315,4 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "IdeogramImg2Img": "IdeogramImg2Img"
 }
+
