@@ -188,8 +188,10 @@ class IdeogramTxt2Img:
                 "color_palette_weight3": ("FLOAT", {"default": 10, "min": 0, "max": 10}),
                 "color_palette_hex4": ("STRING",),
                 "color_palette_weight4": ("FLOAT", {"default": 10, "min": 0, "max": 10}),
-                "api": ("STRING",),
             },
+            "optional": {
+                "api_key": ("STRING",),
+            }
         }
 
     RETURN_TYPES = ("IMAGE",)
@@ -209,11 +211,11 @@ class IdeogramTxt2Img:
                    color_palette_hex2: str, color_palette_weight2: float,
                    color_palette_hex3: str, color_palette_weight3: float,
                    color_palette_hex4: str, color_palette_weight4: float,
-                   api):
-        if len(api) == 0 or api is None:
+                   api_key: str):
+        if len(api_key) == 0 or api_key is None:
             if API_KEY is None:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
-            api = API_KEY
+            api_key = API_KEY
 
         txt2img_generate_url = "https://api.ideogram.ai/generate"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
@@ -285,7 +287,7 @@ class IdeogramTxt2Img:
             payload["image_request"]["aspect_ratio"] = aspect_ratio
 
         headers = {
-            "Api-Key": api,
+            "Api-Key": api_key,
             "Content-Type": "application/json"
         }
 
