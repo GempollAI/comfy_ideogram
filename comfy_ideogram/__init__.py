@@ -1,5 +1,5 @@
 from .text2image import IdeogramTxt2Img
-from .mode_select import ColorSelect,SeedSelect
+from .helper_nodes import ColorSelect,SeedSelect
 
 
 NODE_CLASS_MAPPINGS = {

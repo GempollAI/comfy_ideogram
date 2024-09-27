@@ -1,3 +1,5 @@
+from typing import List
+
 import requests
 from io import BytesIO
 import torch
@@ -7,8 +9,8 @@ from PIL import Image, ImageSequence, ImageOps
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
-MIN_COLOR_WEIGHT_FLOAT = 0.05 # weight >= 0.05, required by Ideogram
-ROUNDING_MULTIPLIER = 100 # 保留百分位
+MIN_COLOR_WEIGHT_FLOAT = 0.05  # weight >= 0.05, required by Ideogram
+ROUNDING_MULTIPLIER = 100  # 保留百分位
 MIN_COLOR_WEIGHT_INT = int(MIN_COLOR_WEIGHT_FLOAT * ROUNDING_MULTIPLIER)
 
 RESOLUTION_DEFAULT = "NotSelected"
@@ -199,6 +201,36 @@ class IdeogramTxt2Img:
     FUNCTION = "text2image"
     CATEGORY = "Ideogram/txt2img"
 
+    @staticmethod
+    def rectify_weights(weights: List[float]) -> List[float]:
+        # 计算剩余元素的总和
+        total_weight = sum(weights)
+
+        # 对剩余的元素进行归一化处理
+        normalized_weight = [i / total_weight for i in weights]
+
+        # 去除小数点后两位的数字，并计算这些被去除值的总和
+        truncated_weight_int = [int(i * ROUNDING_MULTIPLIER) for i in normalized_weight]
+        total_weight_gap = ROUNDING_MULTIPLIER - sum(truncated_weight_int)
+        # 找到剩余元素中的最大值
+        min_index = truncated_weight_int.index(min(truncated_weight_int))
+        # 将被去除值的总和补到最小的数字上
+        truncated_weight_int[min_index] += total_weight_gap
+
+        # 补充低于 MIN_COLOR_WEIGHT_INT 的权重
+        for (i, val) in enumerate(truncated_weight_int):
+            if val < MIN_COLOR_WEIGHT_INT:
+                diff = MIN_COLOR_WEIGHT_INT - val
+                truncated_weight_int[i] = MIN_COLOR_WEIGHT_INT
+                max_index = truncated_weight_int.index(max(truncated_weight_int))
+                truncated_weight_int[max_index] -= diff
+
+        for val in truncated_weight_int:
+            assert val >= MIN_COLOR_WEIGHT_INT, "Impossible"
+
+        rectified_weights = [val / ROUNDING_MULTIPLIER for val in truncated_weight_int]
+        return rectified_weights
+
     def text2image(self,
                    prompt: str,
                    aspect_ratio: str,
@@ -235,33 +267,7 @@ class IdeogramTxt2Img:
             raise ValueError("All weights are zero, cannot proceed with image generation.")
 
         weights, colors = zip(*weights_colors)
-
-        # 计算剩余元素的总和
-        total_weight = sum(weights)
-
-        # 对剩余的元素进行归一化处理
-        normalized_weight = [i / total_weight for i in weights]
-
-        # 去除小数点后两位的数字，并计算这些被去除值的总和
-        truncated_weight_int = [int(i * ROUNDING_MULTIPLIER) for i in normalized_weight]
-        total_weight_gap = ROUNDING_MULTIPLIER - sum(truncated_weight_int)
-        # 找到剩余元素中的最大值
-        min_index = truncated_weight_int.index(min(truncated_weight_int))
-        # 将被去除值的总和补到最小的数字上
-        truncated_weight_int[min_index] += total_weight_gap
-
-        # 补充低于 MIN_COLOR_WEIGHT_INT 的权重
-        for (i, val) in enumerate(truncated_weight_int):
-            if val < MIN_COLOR_WEIGHT_INT:
-                diff = MIN_COLOR_WEIGHT_INT - val
-                truncated_weight_int[i] = MIN_COLOR_WEIGHT_INT
-                max_index = truncated_weight_int.index(max(truncated_weight_int))
-                truncated_weight_int[max_index] -= diff
-
-        for val in truncated_weight_int:
-            assert val >= MIN_COLOR_WEIGHT_INT, "Impossible"
-
-        rectified_weights = [val / ROUNDING_MULTIPLIER for val in truncated_weight_int]
+        rectified_weights = self.rectify_weights(weights)
         color_palette = [
             {"color_hex": color, "color_weight": color_weight}
             for color, color_weight in zip(colors, rectified_weights)

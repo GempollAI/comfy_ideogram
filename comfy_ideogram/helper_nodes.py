@@ -9,8 +9,6 @@ class ColorSelect:
         return {
             "required": {
                 "color": ("COLOR", {"default": "#FFFFFF"},),
-            },
-            "optional": {
             }
         }
 
@@ -25,7 +23,7 @@ class ColorSelect:
 
 class SeedSelect:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "mode": ("BOOLEAN", {"default": True, "label_on": "random", "label_off": "fixed"}),
