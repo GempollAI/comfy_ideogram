@@ -202,6 +202,21 @@ class IdeogramTxt2Img:
     CATEGORY = "Ideogram/txt2img"
 
     @staticmethod
+    def check_color_hex(hex_str: str):
+        if hex_str.startswith("#"):
+            hex_str = hex_str[1:]
+            assert len(hex_str) == 6, "Color must be 6 characters long"
+            r, g, b = hex_str[:2], hex_str[2:4], hex_str[4:]
+            try:
+                int(r, 16)
+                int(g, 16)
+                int(b, 16)
+            except ValueError as e:
+                raise Exception(f"Color must be valid hex, error: {e}")
+        else:
+            raise Exception("Color must start with #")
+
+    @staticmethod
     def rectify_weights(weights: List[float]) -> List[float]:
         # 计算剩余元素的总和
         total_weight = sum(weights)
@@ -252,6 +267,8 @@ class IdeogramTxt2Img:
         txt2img_generate_url = "https://api.ideogram.ai/generate"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
         colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
+        for c in colors:
+            self.check_color_hex(c)
         resolution = RESOLUTION_MAPPING[resolution]
         aspect_ratio = ASPECT_RATIO_MAPPING[aspect_ratio]
 
