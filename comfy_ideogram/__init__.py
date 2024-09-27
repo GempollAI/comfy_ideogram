@@ -1,17 +1,20 @@
 from .text2image import IdeogramTxt2Img
 from .helper_nodes import ColorSelect,SeedSelect
+from .image2image import IdeogramImg2Img
 
 
 NODE_CLASS_MAPPINGS = {
     "IdeogramTxt2Img": IdeogramTxt2Img,
     "ColorSelect": ColorSelect,
-    "SeedSelect": SeedSelect
+    "SeedSelect": SeedSelect,
+    "IdeogramImg2Img": IdeogramImg2Img
 
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "IdeogramTxt2Img": "IdeogramTxt2Img",
     "ColorSelect": "ColorSelect",
-    "SeedSelect": "SeedSelect"
+    "SeedSelect": "SeedSelect",
+    "IdeogramImg2Img": "IdeogramImg2Img"
 }
 
 
