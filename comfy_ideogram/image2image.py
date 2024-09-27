@@ -4,11 +4,13 @@ import torch
 import numpy as np
 import os
 from PIL import Image, ImageSequence, ImageOps
+import json
+
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
-MIN_COLOR_WEIGHT_FLOAT = 0.05 # weight >= 0.05, required by Ideogram
-ROUNDING_MULTIPLIER = 100 # 保留百分位
+MIN_COLOR_WEIGHT_FLOAT = 0.05  # weight >= 0.05, required by Ideogram
+ROUNDING_MULTIPLIER = 100  # 保留百分位
 MIN_COLOR_WEIGHT_INT = int(MIN_COLOR_WEIGHT_FLOAT * ROUNDING_MULTIPLIER)
 
 RESOLUTION_DEFAULT = "NotSelected"
@@ -135,7 +137,6 @@ def load_image(image_source):
         file_name = os.path.basename(image_source)
     return img, file_name
 
-
 def pil2tensor(img):
     output_images = []
     output_masks = []
@@ -164,7 +165,8 @@ def pil2tensor(img):
     return output_image, output_mask
 
 
-class IdeogramTxt2Img:
+
+class IdeogramImg2Img:
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -174,9 +176,11 @@ class IdeogramTxt2Img:
                     "default": "(shadow), silver grey Cadillac xt5 SUV car on the edge of the mountain,sunlight,afternoon,shot from front right side,realistic film photo",
                     "multiline": True
                 }),
+                "image": ("IMAGE",),
                 "aspect_ratio": (list(ASPECT_RATIO_MAPPING.keys()),),
                 "resolution": (list(RESOLUTION_MAPPING.keys()),),
                 "seed": ("INT", {"default": 1234}),
+                "image_weight": ("INT", {"default": 50, "min": 1, "max": 100}),
                 "model": (["V_2", "V_2_TURBO", "V_1", "V_1_TURBO"],),
                 "magic_prompt_option": (["AUTO", "ON", "OFF"],),
                 "negative_prompt": ("STRING", {"default": ""}),
@@ -196,32 +200,56 @@ class IdeogramTxt2Img:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("IMAGE",)
-    FUNCTION = "text2image"
-    CATEGORY = "Ideogram/txt2img"
+    FUNCTION = "image2image"
+    CATEGORY = "Ideogram/img2img"
 
-    def text2image(self,
-                   prompt: str,
-                   aspect_ratio: str,
-                   resolution: str,
-                   model: str,
-                   magic_prompt_option: str,
-                   negative_prompt: str,
-                   seed: int,
-                   color_palette_hex1: str, color_palette_weight1: float,
-                   color_palette_hex2: str, color_palette_weight2: float,
-                   color_palette_hex3: str, color_palette_weight3: float,
-                   color_palette_hex4: str, color_palette_weight4: float,
-                   api_key: str):
+    def image2image(self,
+                    prompt: str,
+                    image: torch.Tensor,
+                    aspect_ratio: str,
+                    resolution: str,
+                    seed: int,
+                    image_weight: int,
+                    model: str,
+                    magic_prompt_option: str,
+                    negative_prompt: str,
+                    color_palette_hex1: str, color_palette_weight1: float,
+                    color_palette_hex2: str, color_palette_weight2: float,
+                    color_palette_hex3: str, color_palette_weight3: float,
+                    color_palette_hex4: str, color_palette_weight4: float,
+                    api_key: str):
         if len(api_key) == 0 or api_key is None:
             if API_KEY is None:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
             api_key = API_KEY
 
-        txt2img_generate_url = "https://api-ideogram-proxy.gempoll.com/generate"
+        img2img_generate_url = "https://api-ideogram-proxy.gempoll.com/remix"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
         colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
         resolution = RESOLUTION_MAPPING[resolution]
         aspect_ratio = ASPECT_RATIO_MAPPING[aspect_ratio]
+        image_weight = int(image_weight)
+
+
+        # 检查输入图像的形状和数据类型
+        if image.ndim != 4:
+            raise ValueError("Input image tensor must be 4-dimensional (batch_size, channels, height, width)")
+        else:
+            image = image.squeeze(0)
+
+        # 确保输入图像的数据类型为float32
+        if image.dtype != torch.float32:
+            image = image.to(torch.float32)
+
+        pil_image = Image.fromarray((image.mul(255).byte().cpu().numpy()).astype(np.uint8))
+        image_bytes = BytesIO()
+        pil_image.save(image_bytes, format='PNG')
+        image_bytes.seek(0)  # 确保字节流的指针在开头位置
+
+        # 准备要发送的文件对象
+        files = {
+            'image_file': ('image.png', image_bytes, 'image/png')
+        }
 
         if resolution == RESOLUTION_DEFAULT and aspect_ratio == ASPECT_RATIO_DEFAULT:
             raise Exception("Must select one of aspect ratio and resolution")
@@ -267,12 +295,13 @@ class IdeogramTxt2Img:
             for color, color_weight in zip(colors, rectified_weights)
         ]
 
-        payload = {
+        image_request = {
             "image_request": {
                 "prompt": prompt,
                 "model": model,
                 "magic_prompt_option": magic_prompt_option,
                 "negative_prompt": negative_prompt,
+                "image_weight": image_weight,
                 "seed": seed,
                 "color_palette": {
                     "members": color_palette
@@ -281,17 +310,21 @@ class IdeogramTxt2Img:
         }
 
         if resolution != RESOLUTION_DEFAULT:
-            payload["image_request"]["resolution"] = resolution
+            image_request["image_request"]["resolution"] = resolution
 
         if aspect_ratio != ASPECT_RATIO_DEFAULT:
-            payload["image_request"]["aspect_ratio"] = aspect_ratio
+            image_request["image_request"]["aspect_ratio"] = aspect_ratio
+
+        payload = {
+            "image_request": json.dumps(image_request)
+        }
 
         headers = {
             "Api-Key": api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "multipart/form-data"
         }
 
-        response = requests.post(txt2img_generate_url, json=payload, headers=headers)
+        response = requests.post(img2img_generate_url, data=payload, files=files, headers=headers)
         response.raise_for_status()
         response_data = response.json()["data"][0]
         is_image_safe = response_data["is_image_safe"]
@@ -304,8 +337,9 @@ class IdeogramTxt2Img:
 
 
 NODE_CLASS_MAPPINGS = {
-    "IdeogramTxt2Img": IdeogramTxt2Img
+    "IdeogramImg2Img": IdeogramImg2Img
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "IdeogramTxt2Img": "IdeogramTxt2Img"
+    "IdeogramImg2Img": "IdeogramImg2Img"
 }
+
