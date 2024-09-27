@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from PIL import Image, ImageSequence, ImageOps
 import requests
+from typing import List
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
