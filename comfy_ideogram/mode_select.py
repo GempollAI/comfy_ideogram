@@ -17,13 +17,13 @@ class ColorSelect:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("value",)
     FUNCTION = 'picker'
-    CATEGORY = 'Ideogram/select'
+    CATEGORY = 'Ideogram/color'
 
     def picker(self, color):
         ret = color
         return (ret,)
 
-class Seed_select:
+class SeedSelect:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -49,10 +49,10 @@ class Seed_select:
 
 NODE_CLASS_MAPPINGS = {
     "ColorSelect": ColorSelect,
-    "Seed_select": Seed_select
+    "SeedSelect": SeedSelect
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "ColorSelect": "ColorSelect",
-    "Seed_select": "Seed_select"
+    "SeedSelect": "SeedSelect"
 }
