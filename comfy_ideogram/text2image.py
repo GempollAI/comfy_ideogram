@@ -297,6 +297,9 @@ class IdeogramTxt2Img:
             "Content-Type": "application/json"
         }
 
+        print("payload", payload)
+
+
         response = requests.post(txt2img_generate_url, json=payload, headers=headers)
         response.raise_for_status()
         response_data = response.json()["data"][0]

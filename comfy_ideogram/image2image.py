@@ -6,7 +6,6 @@ import os
 from PIL import Image, ImageSequence, ImageOps
 import json
 
-
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 
 MIN_COLOR_WEIGHT_FLOAT = 0.05  # weight >= 0.05, required by Ideogram
@@ -137,6 +136,7 @@ def load_image(image_source):
         file_name = os.path.basename(image_source)
     return img, file_name
 
+
 def pil2tensor(img):
     output_images = []
     output_masks = []
@@ -163,7 +163,6 @@ def pil2tensor(img):
         output_mask = output_masks[0]
 
     return output_image, output_mask
-
 
 
 class IdeogramImg2Img:
@@ -230,7 +229,6 @@ class IdeogramImg2Img:
         aspect_ratio = ASPECT_RATIO_MAPPING[aspect_ratio]
         image_weight = int(image_weight)
 
-
         # 检查输入图像的形状和数据类型
         if image.ndim != 4:
             raise ValueError("Input image tensor must be 4-dimensional (batch_size, channels, height, width)")
@@ -247,9 +245,9 @@ class IdeogramImg2Img:
         image_bytes.seek(0)  # 确保字节流的指针在开头位置
 
         # 准备要发送的文件对象
-        files = {
-            'image_file': ('image.png', image_bytes, 'image/png')
-        }
+        files = [
+            ('image_file',('image.png', image_bytes, 'application/octet-stream'))
+        ]
 
         if resolution == RESOLUTION_DEFAULT and aspect_ratio == ASPECT_RATIO_DEFAULT:
             raise Exception("Must select one of aspect ratio and resolution")
@@ -296,35 +294,36 @@ class IdeogramImg2Img:
         ]
 
         image_request = {
-            "image_request": {
-                "prompt": prompt,
-                "model": model,
-                "magic_prompt_option": magic_prompt_option,
-                "negative_prompt": negative_prompt,
-                "image_weight": image_weight,
-                "seed": seed,
-                "color_palette": {
-                    "members": color_palette
-                },
-            }
+            "prompt": prompt,
+            "model": model,
+            "magic_prompt_option": magic_prompt_option,
+            "negative_prompt": negative_prompt,
+            "image_weight": image_weight,
+            "seed": seed,
+            "color_palette": {
+                "members": color_palette
+            },
         }
 
         if resolution != RESOLUTION_DEFAULT:
-            image_request["image_request"]["resolution"] = resolution
+            image_request["resolution"] = resolution
 
         if aspect_ratio != ASPECT_RATIO_DEFAULT:
-            image_request["image_request"]["aspect_ratio"] = aspect_ratio
+            image_request["aspect_ratio"] = aspect_ratio
 
         payload = {
-            "image_request": json.dumps(image_request)
+            'image_request': json.dumps(image_request)
         }
 
         headers = {
-            "Api-Key": api_key,
-            "Content-Type": "multipart/form-data"
+            "Api-Key": api_key
         }
 
-        response = requests.post(img2img_generate_url, data=payload, files=files, headers=headers)
+        print("payload", payload)
+        print("--------------------------------------------------")
+        print("files", files)
+
+        response = requests.post(img2img_generate_url, headers=headers, data=payload, files=files)
         response.raise_for_status()
         response_data = response.json()["data"][0]
         is_image_safe = response_data["is_image_safe"]
@@ -342,4 +341,3 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "IdeogramImg2Img": "IdeogramImg2Img"
 }
-
