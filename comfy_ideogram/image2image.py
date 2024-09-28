@@ -3,167 +3,8 @@ import requests
 from io import BytesIO
 import torch
 import numpy as np
-import os
-from PIL import Image, ImageSequence, ImageOps
+from PIL import Image
 import json
-
-API_KEY = os.environ.get("IDEOGRAM_KEY", None)
-
-MIN_COLOR_WEIGHT_FLOAT = 0.05  # weight >= 0.05, required by Ideogram
-ROUNDING_MULTIPLIER = 100  # 保留百分位
-MIN_COLOR_WEIGHT_INT = int(MIN_COLOR_WEIGHT_FLOAT * ROUNDING_MULTIPLIER)
-
-RESOLUTION_DEFAULT = "NotSelected"
-
-RESOLUTIONS = [
-    RESOLUTION_DEFAULT,
-    "RESOLUTION_1024_640",
-    "RESOLUTION_1024_768",
-    "RESOLUTION_1024_832",
-    "RESOLUTION_1024_896",
-    "RESOLUTION_1024_960",
-    "RESOLUTION_1024_1024",
-    "RESOLUTION_1088_768",
-    "RESOLUTION_1088_832",
-    "RESOLUTION_1088_896",
-    "RESOLUTION_1088_960",
-    "RESOLUTION_1120_896",
-    "RESOLUTION_1152_704",
-    "RESOLUTION_1152_768",
-    "RESOLUTION_1152_832",
-    "RESOLUTION_1152_864",
-    "RESOLUTION_1152_896",
-    "RESOLUTION_1216_704",
-    "RESOLUTION_1216_768",
-    "RESOLUTION_1216_832",
-    "RESOLUTION_1232_768",
-    "RESOLUTION_1248_832",
-    "RESOLUTION_1280_704",
-    "RESOLUTION_1280_720",
-    "RESOLUTION_1280_768",
-    "RESOLUTION_1280_800",
-    "RESOLUTION_1312_736",
-    "RESOLUTION_1344_640",
-    "RESOLUTION_1344_704",
-    "RESOLUTION_1344_768",
-    "RESOLUTION_1408_576",
-    "RESOLUTION_1408_640",
-    "RESOLUTION_1408_704",
-    "RESOLUTION_1472_576",
-    "RESOLUTION_1472_640",
-    "RESOLUTION_1472_704",
-    "RESOLUTION_1536_512",
-    "RESOLUTION_1536_576",
-    "RESOLUTION_1536_640",
-    "RESOLUTION_512_1536",
-    "RESOLUTION_576_1408",
-    "RESOLUTION_576_1472",
-    "RESOLUTION_576_1536",
-    "RESOLUTION_640_1024",
-    "RESOLUTION_640_1344",
-    "RESOLUTION_640_1408",
-    "RESOLUTION_640_1472",
-    "RESOLUTION_640_1536",
-    "RESOLUTION_704_1152",
-    "RESOLUTION_704_1216",
-    "RESOLUTION_704_1280",
-    "RESOLUTION_704_1344",
-    "RESOLUTION_704_1408",
-    "RESOLUTION_704_1472",
-    "RESOLUTION_720_1280",
-    "RESOLUTION_736_1312",
-    "RESOLUTION_768_1024",
-    "RESOLUTION_768_1088",
-    "RESOLUTION_768_1152",
-    "RESOLUTION_768_1216",
-    "RESOLUTION_768_1232",
-    "RESOLUTION_768_1280",
-    "RESOLUTION_768_1344",
-    "RESOLUTION_832_960",
-    "RESOLUTION_832_1024",
-    "RESOLUTION_832_1088",
-    "RESOLUTION_832_1152",
-    "RESOLUTION_832_1216",
-    "RESOLUTION_832_1248",
-    "RESOLUTION_864_1152",
-    "RESOLUTION_896_960",
-    "RESOLUTION_896_1024",
-    "RESOLUTION_896_1088",
-    "RESOLUTION_896_1120",
-    "RESOLUTION_896_1152",
-    "RESOLUTION_960_832",
-    "RESOLUTION_960_896",
-    "RESOLUTION_960_1024",
-    "RESOLUTION_960_1088",
-]
-
-RESOLUTION_MAPPING = {
-    v.replace("RESOLUTION_", "").replace("_", "x"): v
-    for v in RESOLUTIONS
-}
-
-ASPECT_RATIO_DEFAULT = "NotSelected"
-
-ASPECT_RATIOS = [
-    ASPECT_RATIO_DEFAULT,
-    "ASPECT_10_16",
-    "ASPECT_16_10",
-    "ASPECT_9_16",
-    "ASPECT_16_9",
-    "ASPECT_3_2",
-    "ASPECT_2_3",
-    "ASPECT_4_3",
-    "ASPECT_3_4",
-    "ASPECT_4_5",
-    "ASPECT_5_4",
-    "ASPECT_1_1",
-    "ASPECT_1_3",
-    "ASPECT_3_1"
-]
-
-ASPECT_RATIO_MAPPING = {
-    v.replace("ASPECT_", "").replace("_", ":"): v
-    for v in ASPECT_RATIOS
-}
-
-
-def load_image(image_source):
-    if image_source.startswith('http'):
-        response = requests.get(image_source)
-        img = Image.open(BytesIO(response.content))
-        file_name = image_source.split('/')[-1]
-    else:
-        img = Image.open(image_source)
-        file_name = os.path.basename(image_source)
-    return img, file_name
-
-
-def pil2tensor(img):
-    output_images = []
-    output_masks = []
-    for i in ImageSequence.Iterator(img):
-        i = ImageOps.exif_transpose(i)
-        if i.mode == 'I':
-            i = i.point(lambda i: i * (1 / 255))
-        image = i.convert("RGB")
-        image = np.array(image).astype(np.float32) / 255.0
-        image = torch.from_numpy(image)[None,]
-        if 'A' in i.getbands():
-            mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
-            mask = 1. - torch.from_numpy(mask)
-        else:
-            mask = torch.zeros((64, 64), dtype=torch.float32, device="cpu")
-        output_images.append(image)
-        output_masks.append(mask.unsqueeze(0))
-
-    if len(output_images) > 1:
-        output_image = torch.cat(output_images, dim=0)
-        output_mask = torch.cat(output_masks, dim=0)
-    else:
-        output_image = output_images[0]
-        output_mask = output_masks[0]
-
-    return output_image, output_mask
 
 
 class IdeogramImg2Img:
@@ -200,24 +41,24 @@ class IdeogramImg2Img:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("IMAGE",)
-    FUNCTION = "image2image"
+    FUNCTION = "Img2img"
     CATEGORY = "Ideogram/img2img"
 
-    def image2image(self,
-                    prompt: str,
-                    image: torch.Tensor,
-                    aspect_ratio: str,
-                    resolution: str,
-                    seed: int,
-                    image_weight: int,
-                    model: str,
-                    magic_prompt_option: str,
-                    negative_prompt: str,
-                    color_palette_hex1: str, color_palette_weight1: float,
-                    color_palette_hex2: str, color_palette_weight2: float,
-                    color_palette_hex3: str, color_palette_weight3: float,
-                    color_palette_hex4: str, color_palette_weight4: float,
-                    api_key: str):
+    def Img2img(self,
+                prompt: str,
+                image: torch.Tensor,
+                aspect_ratio: str,
+                resolution: str,
+                seed: int,
+                image_weight: int,
+                model: str,
+                magic_prompt_option: str,
+                negative_prompt: str,
+                color_palette_hex1: str, color_palette_weight1: float,
+                color_palette_hex2: str, color_palette_weight2: float,
+                color_palette_hex3: str, color_palette_weight3: float,
+                color_palette_hex4: str, color_palette_weight4: float,
+                api_key: str):
         if len(api_key) == 0 or api_key is None:
             if API_KEY is None:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
@@ -231,7 +72,6 @@ class IdeogramImg2Img:
         resolution = RESOLUTION_MAPPING[resolution]
         aspect_ratio = ASPECT_RATIO_MAPPING[aspect_ratio]
         image_weight = int(image_weight)
-
 
         # 检查输入图像的形状和数据类型
         if image.ndim != 4:
@@ -250,7 +90,7 @@ class IdeogramImg2Img:
 
         # 准备要发送的文件对象
         files = [
-            ('image_file',('image.png', image_bytes, 'application/octet-stream'))
+            ('image_file', ('image.png', image_bytes, 'application/octet-stream'))
         ]
 
         if resolution == RESOLUTION_DEFAULT and aspect_ratio == ASPECT_RATIO_DEFAULT:
@@ -315,4 +155,3 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "IdeogramImg2Img": "IdeogramImg2Img"
 }
-
