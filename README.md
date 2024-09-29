@@ -10,8 +10,11 @@ ComfyUI nodes for using Ideogram APIs, including:
 ## Usage
 Prerequisite: [Ideogram](https://ideogram.ai/) API Key
 
-1. Set the API key in environment variables `IDEOGRAM_KEY` before ComfyUI starts or set it on the node.
-2. Use the node as you like
+1. In `path/to/your/comfyui/custom_nodes` folder:
+   * Run the command `git clone https://github.com/GempollAI/comfy_ideogram.git`
+   * Or, download the source code and place it in the folder
+2. Set the API key in environment variables `IDEOGRAM_KEY` _before_ ComfyUI starts or set it on the node.
+3. Use the node as you like
    * If you want to pick a color instead of inputting a color hex value, use `ColorSelect` node.
 
 Example: You can use [example_all_nodes.json](example_all_nodes.json) to test all nodes.
