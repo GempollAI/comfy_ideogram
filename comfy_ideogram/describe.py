@@ -20,10 +20,10 @@ class IdeogramDescribe:
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("DESCRIPTION",)
-    FUNCTION = "Describe"
+    FUNCTION = "describe"
     CATEGORY = "Ideogram/describe"
 
-    def Describe(self, image: torch.Tensor, api_key: str):
+    def describe(self, image: torch.Tensor, api_key: str):
         if len(api_key) == 0 or api_key is None:
             if API_KEY is None:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")

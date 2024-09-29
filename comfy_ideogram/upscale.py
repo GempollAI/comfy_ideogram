@@ -28,11 +28,11 @@ class IdeogramUpscale:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("IMAGE",)
-    FUNCTION = "Upscale"
+    FUNCTION = "upscale"
     CATEGORY = "Ideogram/upscale"
 
 
-    def Upscale(self,
+    def upscale(self,
                 prompt: str,
                 image: torch.Tensor,
                 resemblance: int,
