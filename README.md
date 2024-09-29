@@ -14,6 +14,8 @@ Prerequisite: [Ideogram](https://ideogram.ai/) API Key
 2. Use the node as you like
    * If you want to pick a color instead of inputting a color hex value, use `ColorSelect` node.
 
+Example: You can use `example_all_nodes.json` to test all nodes.
+
 ## LICENSE
 [MIT License](LICENSE)
 
