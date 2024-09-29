@@ -57,7 +57,7 @@ class IdeogramDescribe:
         response = requests.post(describe_url, files=files, headers=headers)
         response.raise_for_status()
         response_description = response.json()["descriptions"]
-        text = response_description["text"]
+        text = response_description[0]["text"]
         return (text,)
 
 
