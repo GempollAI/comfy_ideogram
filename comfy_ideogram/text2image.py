@@ -16,6 +16,7 @@ class IdeogramTxt2Img:
                 "seed": ("INT", {"default": 1234}),
                 "model": (IDEOGRAM_MODELS,),
                 "magic_prompt_option": (MAGIC_PROMPT_OPTIONS,),
+                "style_type": (STYLE_TYPES,),
                 "negative_prompt": ("STRING", {"default": ""}),
                 "color_palette_hex1": ("STRING",),
                 "color_palette_weight1": ("FLOAT", {"default": 10, "min": 0, "max": 10}),
@@ -42,6 +43,7 @@ class IdeogramTxt2Img:
                    resolution: str,
                    model: str,
                    magic_prompt_option: str,
+                   style_type: str,
                    negative_prompt: str,
                    seed: int,
                    color_palette_hex1: str, color_palette_weight1: float,
@@ -82,6 +84,7 @@ class IdeogramTxt2Img:
                 "prompt": prompt,
                 "model": model,
                 "magic_prompt_option": magic_prompt_option,
+                "style_type": style_type,
                 "negative_prompt": negative_prompt,
                 "seed": seed,
                 "color_palette": {
