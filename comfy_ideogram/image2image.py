@@ -66,6 +66,11 @@ class IdeogramImg2Img:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
             api_key = API_KEY
 
+        if resolution == RESOLUTION_DEFAULT and aspect_ratio == ASPECT_RATIO_DEFAULT:
+            raise Exception("Must select one of aspect ratio and resolution")
+        if resolution != RESOLUTION_DEFAULT and aspect_ratio != ASPECT_RATIO_DEFAULT:
+            raise Exception("Should not select both aspect ratio and resolution")
+
         img2img_generate_url = "https://api-ideogram-proxy.gempoll.com/remix"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
         colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
@@ -94,11 +99,6 @@ class IdeogramImg2Img:
         files = [
             ('image_file', ('image.png', image_bytes, 'application/octet-stream'))
         ]
-
-        if resolution == RESOLUTION_DEFAULT and aspect_ratio == ASPECT_RATIO_DEFAULT:
-            raise Exception("Must select one of aspect ratio and resolution")
-        if resolution != RESOLUTION_DEFAULT and aspect_ratio != ASPECT_RATIO_DEFAULT:
-            raise Exception("Should not select both aspect ratio and resolution")
 
         # 移除权重为0的元素及其对应的颜色
         weights_colors = [(w, c) for w, c in zip(weights, colors) if w != 0.0]
