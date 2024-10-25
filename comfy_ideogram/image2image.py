@@ -127,6 +127,7 @@ class IdeogramImg2Img:
         }
 
         if resolution != RESOLUTION_DEFAULT:
+            assert model in RESOLUTION_ALLOW_MODELS, f"Model {model} does not support specifying resolution."
             image_request["resolution"] = resolution
 
         if aspect_ratio != ASPECT_RATIO_DEFAULT:
