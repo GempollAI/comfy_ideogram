@@ -46,7 +46,7 @@ class IdeogramUpscale:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
             api_key = API_KEY
 
-        upscale_url = "https://api-ideogram-proxy.gempoll.com/upscale"
+        upscale_url = f"{API_ENDPOINT}/upscale"
 
         payload = {
             'image_request': json.dumps({

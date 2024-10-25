@@ -61,7 +61,7 @@ class IdeogramTxt2Img:
         if resolution != RESOLUTION_DEFAULT and aspect_ratio != ASPECT_RATIO_DEFAULT:
             raise Exception("Should not select both aspect ratio and resolution")
 
-        txt2img_generate_url = "https://api-ideogram-proxy.gempoll.com/generate"
+        txt2img_generate_url = f"{API_ENDPOINT}/generate"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
         colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
         for c in colors:

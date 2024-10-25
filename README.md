@@ -17,6 +17,8 @@ Prerequisite: [Ideogram](https://ideogram.ai/) API Key
 3. Use the node as you like
    * If you want to pick a color instead of inputting a color hex value, use `ColorSelect` node.
 
+Optionally, if you want to use a different API endpoint, set it in environment variable `IDEOGRAM_API_ENDPOINT` _before_ ComfyUI starts.
+
 Example: You can use [example_all_nodes.json](example_all_nodes.json) to test all nodes.
 
 ## LICENSE

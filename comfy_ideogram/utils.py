@@ -7,6 +7,8 @@ import requests
 from typing import List
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
+API_ENDPOINT = os.environ.get("IDEOGRAM_API_ENDPOINT", "https://api.ideogram.ai")
+API_ENDPOINT = API_ENDPOINT.strip('/')
 
 MIN_COLOR_WEIGHT_FLOAT = 0.05  # weight >= 0.05, required by Ideogram
 ROUNDING_MULTIPLIER = 100  # 保留百分位

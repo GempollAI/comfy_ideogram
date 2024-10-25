@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import json
 
+DESCRIBE_URL = f"{API_ENDPOINT}/describe"
 
 class IdeogramDescribe:
 
@@ -29,7 +30,6 @@ class IdeogramDescribe:
                 raise Exception("Must configure the API key in env_var `IDEOGRAM_KEY` or on the node.")
             api_key = API_KEY
 
-        describe_url = "https://api-ideogram-proxy.gempoll.com/describe"
         # 检查输入图像的形状和数据类型
         if image.ndim != 4:
             raise ValueError("Input image tensor must be 4-dimensional (batch_size, channels, height, width)")
@@ -54,7 +54,7 @@ class IdeogramDescribe:
             "Api-Key": api_key
         }
 
-        response = requests.post(describe_url, files=files, headers=headers)
+        response = requests.post(DESCRIBE_URL, files=files, headers=headers)
         response.raise_for_status()
         response_description = response.json()["descriptions"]
         text = response_description[0]["text"]

@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import json
 
+REMIX_URL = f"{API_ENDPOINT}/remix"
 
 class IdeogramImg2Img:
 
@@ -71,7 +72,6 @@ class IdeogramImg2Img:
         if resolution != RESOLUTION_DEFAULT and aspect_ratio != ASPECT_RATIO_DEFAULT:
             raise Exception("Should not select both aspect ratio and resolution")
 
-        img2img_generate_url = "https://api-ideogram-proxy.gempoll.com/remix"
         weights = [color_palette_weight1, color_palette_weight2, color_palette_weight3, color_palette_weight4]
         colors = [color_palette_hex1, color_palette_hex2, color_palette_hex3, color_palette_hex4]
         for c in colors:
@@ -141,7 +141,7 @@ class IdeogramImg2Img:
             "Api-Key": api_key
         }
 
-        response = requests.post(img2img_generate_url, data=payload, files=files, headers=headers)
+        response = requests.post(REMIX_URL, data=payload, files=files, headers=headers)
         response.raise_for_status()
         response_data = response.json()["data"][0]
         is_image_safe = response_data["is_image_safe"]
