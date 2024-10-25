@@ -6,6 +6,7 @@ ComfyUI nodes for using Ideogram APIs, including:
 * Remix - Text with Reference Image to Image
 * Describe: Image to Text
 * Upscale: Upscale Image 
+* Edit: Edit an image with a mask
 
 ## Usage
 Prerequisite: [Ideogram](https://ideogram.ai/) API Key
