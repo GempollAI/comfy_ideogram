@@ -99,9 +99,7 @@ class IdeogramImg2Img:
 
         # 移除权重为0的元素及其对应的颜色
         weights_colors = [(w, c) for w, c in zip(weights, colors) if w != 0.0]
-
-        if not weights_colors:
-            raise ValueError("All weights are zero, cannot proceed with image generation.")
+        assert len(weights_colors) > 0, "All weights are zero, cannot proceed with image generation."
 
         weights, colors = zip(*weights_colors)
         rectified_weights = rectify_weights(weights)
