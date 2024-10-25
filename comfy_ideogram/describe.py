@@ -1,10 +1,4 @@
 from .utils import *
-import requests
-from io import BytesIO
-import torch
-import numpy as np
-from PIL import Image
-import json
 
 DESCRIBE_URL = f"{API_ENDPOINT}/describe"
 

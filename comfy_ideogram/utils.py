@@ -1,10 +1,11 @@
 import os
 from io import BytesIO
-import torch
-import numpy as np
-from PIL import Image, ImageSequence, ImageOps
-import requests
 from typing import List
+
+import numpy as np
+import requests
+import torch
+from PIL import Image, ImageSequence, ImageOps
 
 API_KEY = os.environ.get("IDEOGRAM_KEY", None)
 API_ENDPOINT = os.environ.get("IDEOGRAM_API_ENDPOINT", "https://api.ideogram.ai")

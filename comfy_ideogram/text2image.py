@@ -1,5 +1,5 @@
 from .utils import *
-import requests
+
 
 class IdeogramTxt2Img:
 
@@ -106,7 +106,6 @@ class IdeogramTxt2Img:
         }
 
         print("payload", payload)
-
 
         response = requests.post(txt2img_generate_url, json=payload, headers=headers)
         response.raise_for_status()

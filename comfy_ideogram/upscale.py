@@ -1,10 +1,7 @@
-from .utils import *
-import requests
-from io import BytesIO
-import torch
-import numpy as np
-from PIL import Image
 import json
+
+from .utils import *
+
 
 class IdeogramUpscale:
     @classmethod
@@ -30,7 +27,6 @@ class IdeogramUpscale:
     RETURN_NAMES = ("IMAGE",)
     FUNCTION = "upscale"
     CATEGORY = "Ideogram/upscale"
-
 
     def upscale(self,
                 prompt: str,
