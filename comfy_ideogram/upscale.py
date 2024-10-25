@@ -19,7 +19,7 @@ class IdeogramUpscale:
                 "resemblance": ("INT", {"default": 50, "min": 1, "max": 100}),
                 "detail": ("INT", {"default": 50, "min": 1, "max": 100}),
                 "seed": ("INT", {"default": 1234}),
-                "magic_prompt_option": (["AUTO", "ON", "OFF"],)
+                "magic_prompt_option": (MAGIC_PROMPT_OPTIONS,)
             },
             "optional": {
                 "api_key": ("STRING",),
